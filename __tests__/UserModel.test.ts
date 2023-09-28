@@ -3,9 +3,8 @@ import { omit } from 'lodash';
 
 
 const prisma = new PrismaClient();
-afterAll(async (done)=> {
+afterAll(async ()=> {
     await prisma.$disconnect();
-    done();
 });
 
 describe("User",()=> {
@@ -23,5 +22,24 @@ describe("User",()=> {
         });
 
         expect(result.username).toMatch(omit(["id","createdAt", "updatedAt"],user));
+    });
+
+    it("should return an existing user",async ()=>{
+        const user = {
+            username: "test_user",
+            password: "12323454645",
+            first_name: "Test",
+            last_name: "User",
+            address: "Posti 12",
+            telephone: "123456789"
+        };
+        
+        const createdUser = await prisma.user.create({
+            data: user
+        });
+
+        const existingUser = await prisma.user.findUnique({where: {username: user.username}});
+
+        expect(existingUser).toEqual(createdUser);
     });
 });
